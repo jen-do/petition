@@ -1,0 +1,14 @@
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel</p>
+{{#if err}}
+    <p>Uups. Something went wrong. Please try again.</p>
+{{/if}}
+
+
+<form method="POST">
+    <input type="text" name="first" placeholder="first name">
+    <input type="text" name="last" placeholder="last name">
+    <input id="hidden" type="hidden" name="sig">
+    <canvas id="canv" width="300" height="100"></canvas>
+    <button>submit</button>
+</form>
