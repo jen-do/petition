@@ -1,0 +1,14 @@
+<h2>Login</h2>
+
+{{#if err}}
+    <p><strong>Uups. Something went wrong. Please try again.</strong></p>
+{{/if}}
+
+
+<form method="POST">
+    <label><input type="email" name="email">email</label>
+    <label><input type="text" name="pass">password</label>
+
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>submit</button>
+</form>

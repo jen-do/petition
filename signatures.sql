@@ -4,5 +4,6 @@ CREATE TABLE signatures (
     id SERIAL PRIMARY KEY,
     first VARCHAR(50) NOT NULL,
     last VARCHAR(50) NOT NULL,
-    sig TEXT NOT NULL
+    sig TEXT NOT NULL,
+    user_id INTEGER NOT NULL REFERENCES users(id)
 );
