@@ -1,6 +1,11 @@
 body {
     background: #adccc7;
-    font-family: Helvetica;
+    font-family: "Merriweather sans";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
 }
 
 canvas {
@@ -12,8 +17,14 @@ canvas {
 label {
     display: block;
     margin: 10px 0;
+    font-weight: bold;
 }
 
 label > input {
     display: block;
+    margin: 0 auto;
+}
+
+p.signers {
+    line-height: 0.75em;
 }

@@ -47,27 +47,23 @@ app.get("/", function(req, res) {
 });
 
 app.get("/register", (req, res) => {
-    res.render("register", {
-        layout: "main"
-    });
+    if (req.session.userId) {
+        res.redirect("/petition");
+    } else {
+        res.render("register", {
+            layout: "main"
+        });
+    }
 });
 
 app.post("/register", (req, res) => {
     bcrypt.hash(req.body.pass).then(hash => {
-        console.log(hash);
         db.register(req.body.first, req.body.last, req.body.email, hash)
             .then(function(results) {
-                console.log(results);
-                const firstname = results[0].first;
-                const lastname = results[0].last;
-                const userId = results[0].id;
-
-                req.session.userId = userId;
-                req.session.first = firstname;
-                req.session.last = lastname;
-            })
-            .then(function() {
-                res.redirect("/petition");
+                req.session.userId = results[0].id;
+                req.session.first = results[0].first;
+                req.session.last = results[0].last;
+                res.redirect("/profile");
             })
             .catch(function(err) {
                 console.log("Error in POST /register: ", err);
@@ -79,26 +75,67 @@ app.post("/register", (req, res) => {
     });
 });
 
-app.get("/login", (req, res) => {
-    res.render("login", {
+app.get("/profile", (req, res) => {
+    res.render("profile", {
         layout: "main"
     });
+});
+
+app.post("/profile", (req, res) => {
+    if (req.body.age != null || req.body.city != null || req.body.url != null) {
+        db.addInfo(
+            req.body.age,
+            req.body.city,
+            req.body.url,
+            req.session.userId
+        )
+            .then(function(results) {
+                req.session.age = results[0].age;
+                req.session.city = results[0].city;
+                req.session.url = results[0].url;
+                res.redirect("/petition");
+            })
+            .catch(function(err) {
+                console.log(err);
+                res.render("profile", {
+                    layout: "main",
+                    err: err
+                });
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+app.get("/login", (req, res) => {
+    if (req.session.userId) {
+        res.redirect("/petition");
+    } else {
+        res.render("login", {
+            layout: "main"
+        });
+    }
 });
 
 app.post("/login", (req, res) => {
     db.login(req.body.email)
         .then(function(results) {
-            console.log(results);
+            // console.log(results);
             if (results.length == 0) {
                 throw new Error("no valid email address");
             }
             bcrypt
                 .compare(req.body.pass, results[0].pass)
                 .then(function(matches) {
-                    if (matches) {
-                        console.log(matches);
-                        // console.log(req.session, req.body);
-                        req.session.userId = results[0].id;
+                    // console.log(matches, results[0]);
+                    if (matches && results[0].signatures_id) {
+                        req.session.signatureId = results[0].signatures_id;
+                        req.session.userId = results[0].user_id;
+                        req.session.first = results[0].first;
+                        req.session.last = results[0].last;
+                        res.redirect("/thanks");
+                    } else if (matches && !results[0].signatures_id) {
+                        req.session.userId = results[0].user_id;
                         req.session.first = results[0].first;
                         req.session.last = results[0].last;
                         res.redirect("/petition");
@@ -117,9 +154,6 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-    if (!req.session.userId) {
-        res.redirect("/register");
-    }
     if (req.session.signatureId) {
         res.redirect("/thanks");
     } else {
@@ -137,10 +171,9 @@ app.post("/petition", (req, res) => {
             req.session.userId = results[0].user_id;
             req.session.signatureId = results[0].id;
             req.session.first = results[0].first;
-        })
-        .then(function() {
             res.redirect("/thanks");
         })
+
         .catch(function(err) {
             console.log(err);
             res.render("petition", {
@@ -153,14 +186,19 @@ app.post("/petition", (req, res) => {
 app.get("/thanks", (req, res) => {
     // console.log(req.session);
     if (req.session.signatureId) {
-        db.getSignature(req.session.signatureId).then(function(results) {
-            const usersSignature = results[0].sig;
+        // Promise.all([
+        //     db.countSigners(),
+        //     db.getSignature(req.session.signatureId)
+        // ])
 
+        db.getSignature(req.session.signatureId).then(function(results) {
+            // console.log(results);
+            const usersSignature = results[0].sig;
             res.render("thanks", {
                 layout: "main",
                 name: req.session.first,
-                signature: usersSignature,
-                numberOfSignatures: req.session.signatureId
+                signature: usersSignature
+                // TO DO: get function for counting signatures with Promise.all
             });
         });
     } else {
@@ -174,7 +212,7 @@ app.get("/signers", (req, res) => {
             .then(function(results) {
                 // console.log(results);
                 const arrayOfSignersNames = results;
-                console.log(arrayOfSignersNames);
+                // console.log(arrayOfSignersNames);
                 res.render("signers", {
                     layout: "main",
                     listOfSigners: arrayOfSignersNames
@@ -186,6 +224,26 @@ app.get("/signers", (req, res) => {
     } else {
         res.redirect("/petition");
     }
+});
+
+app.get("/signers/:cities", (req, res) => {
+    db.getSignersbyCity(req.params.cities)
+        .then(function(results) {
+            // console.log(results);
+            const arrayOfSignersPerCity = results;
+            res.render("signers", {
+                layout: "main",
+                listOfSigners: arrayOfSignersPerCity
+            });
+        })
+        .catch(function(err) {
+            console.log("Error in GET /signers/:cities: ", err);
+        });
+});
+
+app.get("/logout", function(req, res) {
+    req.session = null;
+    res.redirect("/register");
 });
 
 app.listen(8080, () => console.log("listening"));

@@ -6,11 +6,13 @@
 
 
 <form method="POST">
-    <label>first name<input type="text" name="first"></label>
-    <label>last name<input type="text" name="last"></label>
-    <label>email<input type="email" name="email"></label>
-    <label>password<input type="text" name="pass"></label>
+    <label><input type="text" name="first">first name</label>
+    <label><input type="text" name="last">last name</label>
+    <label><input type="email" name="email">email</label>
+    <label><input type="text" name="pass">your password</label>
 
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>submit</button>
 </form>
+
+<p>If you already got an account >>> <a href="/login">sign in here</a>.</p>

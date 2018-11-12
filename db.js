@@ -17,11 +17,28 @@ exports.register = function(first, last, email, hash) {
         });
 };
 
+exports.addInfo = function(age, city, url, user_id) {
+    return db
+        .query(
+            `INSERT INTO user_profiles (age, city, url, user_id)
+        VALUES ($1, $2, $3, $4)
+        RETURNING age, city, url`,
+            [age || null, city || null, url || null, user_id || null]
+        )
+        .then(function(results) {
+            return results.rows;
+        });
+};
+
 exports.login = function(email) {
     return db
         .query(
             `
-            SELECT * FROM users WHERE email = $1
+            SELECT signatures.id AS signatures_id, users.id AS user_id, users.first, users.last, users.pass
+            FROM signatures
+            FULL OUTER JOIN users
+            ON users.id = signatures.user_id
+            WHERE email = $1
         `,
             [email]
         )
@@ -43,6 +60,12 @@ exports.sign = function(first, last, sig, user_id) {
         });
 };
 
+exports.countSigners = function() {
+    return db.query(`SELECT COUNT(id) FROM signatures`).then(function(results) {
+        return results.rows;
+    });
+};
+
 exports.getSignature = function(id) {
     return db
         .query(
@@ -61,8 +84,27 @@ exports.getSignature = function(id) {
 exports.getSigners = function() {
     return db
         .query(
-            `SELECT first, last FROM signatures
+            `SELECT first, last, age, city, url
+            FROM signatures
+            LEFT JOIN user_profiles
+            ON user_profiles.user_id = signatures.user_id
         `
+        )
+        .then(function(results) {
+            return results.rows;
+        });
+};
+
+exports.getSignersbyCity = function(city) {
+    return db
+        .query(
+            `
+        SELECT first, last, age, city, url
+        FROM signatures
+        LEFT JOIN user_profiles
+        ON signatures.user_id = user_profiles.user_id
+        WHERE LOWER(city) = LOWER($1)`,
+            [city]
         )
         .then(function(results) {
             return results.rows;

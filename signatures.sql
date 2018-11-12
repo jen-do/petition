@@ -1,3 +1,5 @@
+
+
 DROP TABLE IF EXISTS signatures;
 
 CREATE TABLE signatures (

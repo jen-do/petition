@@ -8,8 +8,10 @@ Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla conse
 <form method="POST">
     <input type="text" name="first" value="{{first}}">
     <input type="text" name="last" value="{{last}}">
-    <input id="hidden" type="hidden" name="sig">
+    <label><input id="hidden" type="hidden" name="sig">please sign here</label>
     <canvas id="canv" width="300" height="100"></canvas>
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>submit</button>
 </form>
+
+<a href="/logout">log out</a>

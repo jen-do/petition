@@ -27,7 +27,4 @@ document.addEventListener("mouseup", function() {
     let hiddenField = document.getElementById("hidden");
     hiddenField.value = "";
     hiddenField.value += canvas.toDataURL();
-
-    // console.log(canvas.toDataURL());
-    // console.log("hiddenField.value: ", hiddenField.value);
 });
