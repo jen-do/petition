@@ -163,6 +163,90 @@ app.post("/login", (req, res) => {
         });
 });
 
+app.get("/profile/edit", (req, res) => {
+    console.log("session usedId: ", req.session.userId);
+    db.getProfile(req.session.userId)
+        .then(function(results) {
+            const updateProfileArray = results;
+            console.log("updateProfileArray:", updateProfileArray);
+            res.render("editprofile", {
+                layout: "main",
+                prepopulateForm: updateProfileArray
+            });
+        })
+        .catch(function(err) {
+            console.log(err);
+            res.render("editprofile", {
+                layout: "main",
+                err: err
+            });
+        });
+});
+//
+app.post("/profile/edit", (req, res) => {
+    console.log("req.body: ", req.body);
+    if (req.body.pass != "") {
+        // console.log("post on /profile/edit");
+        bcrypt
+            .hash(req.body.pass)
+            .then(hash => {
+                db.updateUserAndPassword(
+                    req.session.userId,
+                    req.body.first,
+                    req.body.last,
+                    req.body.email,
+                    hash
+                );
+            })
+            .catch(function(err) {
+                console.log("err in UpdateUserandPass: ", err);
+                res.render("editprofile", {
+                    layout: "main",
+                    err: err
+                });
+            });
+    } else {
+        db.updateUser(
+            req.session.userId,
+            req.body.first,
+            req.body.last,
+            req.body.email
+        ).catch(function(err) {
+            console.log("err in updateUser: ", err);
+            res.render("editprofile", {
+                layout: "main",
+                err: err
+            });
+        });
+    }
+    var httpUrl = "";
+    if (!req.body.url.startsWith("http") && !req.body.url.startsWith("https")) {
+        httpUrl = "http://" + req.body.url;
+        console.log("no http");
+    } else {
+        httpUrl = req.body.url;
+        console.log("http");
+    }
+
+    db.updateUserProfile(
+        req.body.age,
+        req.body.city,
+        httpUrl,
+        // req.body.url,
+        req.session.userId
+    )
+        .then(function() {
+            res.redirect("/petition");
+        })
+        .catch(function(err) {
+            console.log("updateUserProfile err: ", err);
+            res.render("editprofile", {
+                layout: "main",
+                err: err
+            });
+        });
+});
+
 app.get("/petition", (req, res) => {
     if (req.session.signatureId) {
         res.redirect("/thanks");
@@ -198,17 +282,21 @@ app.get("/thanks", (req, res) => {
         Promise.all([
             db.countSigners(),
             db.getSignature(req.session.signatureId)
-        ]).then(function(results) {
-            const numOfSigners = results[0][0].count;
-            const userSignature = results[1][0].sig;
-            // console.log("number of signers: ", numOfSigners);
-            res.render("thanks", {
-                layout: "main",
-                name: req.session.first,
-                signature: userSignature,
-                numOfSigners: numOfSigners
+        ])
+            .then(function(results) {
+                const numOfSigners = results[0][0].count;
+                const userSignature = results[1][0].sig;
+                // console.log("number of signers: ", numOfSigners);
+                res.render("thanks", {
+                    layout: "main",
+                    name: req.session.first,
+                    signature: userSignature,
+                    numOfSigners: numOfSigners
+                });
+            })
+            .catch(function(err) {
+                console.log("Error in GET thanks: ", err);
             });
-        });
     } else {
         res.redirect("/petition");
     }
@@ -247,6 +335,23 @@ app.get("/signers/:cities", (req, res) => {
             console.log("Error in GET /signers/:cities: ", err);
         });
 });
+
+app.post("/sig/delete", (req, res) => {
+    console.log("delete signature");
+    db.deleteSignature(req.session.userId)
+        .then(function() {
+            req.session.signatureId = null;
+            // console.log(results);
+            res.redirect("/petition");
+        })
+        .catch(function(err) {
+            console.log("Error in POST delete signature ", err);
+        });
+});
+
+// app.post("/user/delete", (req, res) => {
+//     console.log("delete user");
+// });
 
 app.get("/logout", function(req, res) {
     req.session = null;

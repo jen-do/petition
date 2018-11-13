@@ -30,6 +30,74 @@ exports.addInfo = function(age, city, url, user_id) {
         });
 };
 
+exports.getProfile = function(user_id) {
+    return db
+        .query(
+            `
+        SELECT users.id, users.first, users.last, users.email, user_profiles.age, user_profiles.city, user_profiles.url
+        FROM users
+        LEFT JOIN user_profiles
+        ON users.id = user_profiles.user_id
+        WHERE user_profiles.user_id = $1`,
+            [user_id]
+        )
+        .then(function(results) {
+            return results.rows;
+        });
+};
+
+exports.updateUser = function(id, first, last, email) {
+    return db
+        .query(
+            `
+        UPDATE users
+        SET first = $2, last = $3, email = $4
+        WHERE id = $1
+    
+        `,
+            [id, first, last, email]
+        )
+        .then(function(results) {
+            return results.rows;
+        });
+};
+
+exports.updateUserAndPassword = function(id, first, last, email, hash) {
+    return db
+        .query(
+            `
+        UPDATE users
+        SET first = $2, last = $3, email = $4, pass = $5
+        WHERE id = $1
+
+        `,
+            [id, first, last, email, hash]
+        )
+        .then(function(results) {
+            return results.rows;
+        });
+};
+
+exports.updateUserProfile = function(age, city, url, user_id) {
+    console.log("db.updateuserprofile");
+    return db
+        .query(
+            `
+        INSERT INTO user_profiles (age, city, url, user_id)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id)
+        DO UPDATE SET age = $1, city = $2, url = $3
+        `,
+            [age, city, url, user_id]
+        )
+        .then(function(results) {
+            return results.rows;
+        })
+        .catch(function(err) {
+            throw console.log(err);
+        });
+};
+
 exports.login = function(email) {
     return db
         .query(
@@ -112,5 +180,19 @@ exports.getSignersbyCity = function(city) {
         )
         .then(function(results) {
             return results.rows;
+        });
+};
+
+exports.deleteSignature = function(user_id) {
+    return db
+        .query(
+            `
+            DELETE FROM signatures
+            WHERE user_id = $1
+            `,
+            [user_id]
+        )
+        .then(function() {
+            return;
         });
 };

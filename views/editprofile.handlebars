@@ -1,0 +1,25 @@
+<h2>Update your profile</h2>
+
+{{#if err}}
+    <p><strong>Uups. Something went wrong. Please try again.</strong></p>
+{{/if}}
+
+
+<form method="POST" autocomplete="off">
+    {{#each prepopulateForm}}
+    <label><input type="test" name="first" value="{{first}}">firstname</label>
+    <label><input type="text" name="last" value="{{last}}">lastname</label>
+    <label><input type="test" name="email" value="{{email}}">email</label>
+    <label><input type="text" name="pass">password</label>
+    <label><input type="test" name="age" value="{{age}}">age</label>
+    <label><input type="text" name="city" value="{{city}}">city</label>
+    <label><input type="text" name="url" value={{url}}>homepage</label>
+    {{/each}}
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>continue</button>
+</form>
+
+<form method="POST" action="/sig/delete">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>Unsign Petition</button>
+</form>
