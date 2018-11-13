@@ -28,3 +28,7 @@ label > input {
 p.signers {
     line-height: 0.75em;
 }
+
+.city {
+    text-transform: capitalize;
+}

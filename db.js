@@ -47,13 +47,13 @@ exports.login = function(email) {
         });
 };
 
-exports.sign = function(first, last, sig, user_id) {
+exports.sign = function(sig, user_id) {
     return db
         .query(
-            `INSERT INTO signatures (first, last, sig, user_id)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, first, last`,
-            [first || null, last || null, sig || null, user_id || null]
+            `INSERT INTO signatures (sig, user_id)
+        VALUES ($1, $2)
+        RETURNING id, user_id`,
+            [sig || null, user_id || null]
         )
         .then(function(results) {
             return results.rows;
@@ -88,6 +88,8 @@ exports.getSigners = function() {
             FROM signatures
             LEFT JOIN user_profiles
             ON user_profiles.user_id = signatures.user_id
+            LEFT JOIN users
+            ON users.id = signatures.user_id
         `
         )
         .then(function(results) {
@@ -102,7 +104,9 @@ exports.getSignersbyCity = function(city) {
         SELECT first, last, age, city, url
         FROM signatures
         LEFT JOIN user_profiles
-        ON signatures.user_id = user_profiles.user_id
+        ON user_profiles.user_id = signatures.user_id
+        LEFT JOIN users
+        ON users.id = signatures.user_id
         WHERE LOWER(city) = LOWER($1)`,
             [city]
         )

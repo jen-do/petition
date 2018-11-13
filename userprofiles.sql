@@ -1,3 +1,5 @@
+-- DROP TABLE user_profiles;
+
 DROP TABLE IF EXISTS user_profiles;
 
 CREATE TABLE user_profiles(

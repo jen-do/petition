@@ -83,16 +83,28 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
     if (req.body.age != null || req.body.city != null || req.body.url != null) {
+        var httpUrl = "";
+        if (
+            !req.body.url.startsWith("http") ||
+            !req.body.url.startsWith("https")
+        ) {
+            httpUrl = "http://" + req.body.url;
+            console.log("no http");
+        } else {
+            httpUrl = req.body.url;
+            console.log("http");
+        }
         db.addInfo(
             req.body.age,
             req.body.city,
-            req.body.url,
+            httpUrl,
+            // req.body.url,
             req.session.userId
         )
             .then(function(results) {
                 req.session.age = results[0].age;
                 req.session.city = results[0].city;
-                req.session.url = results[0].url;
+                req.session.url = httpUrl;
                 res.redirect("/petition");
             })
             .catch(function(err) {
@@ -120,14 +132,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     db.login(req.body.email)
         .then(function(results) {
-            // console.log(results);
             if (results.length == 0) {
                 throw new Error("no valid email address");
             }
             bcrypt
                 .compare(req.body.pass, results[0].pass)
                 .then(function(matches) {
-                    // console.log(matches, results[0]);
                     if (matches && results[0].signatures_id) {
                         req.session.signatureId = results[0].signatures_id;
                         req.session.userId = results[0].user_id;
@@ -166,11 +176,10 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    db.sign(req.body.first, req.body.last, req.body.sig, req.session.userId)
+    db.sign(req.body.sig, req.session.userId)
         .then(function(results) {
             req.session.userId = results[0].user_id;
             req.session.signatureId = results[0].id;
-            req.session.first = results[0].first;
             res.redirect("/thanks");
         })
 
@@ -186,19 +195,18 @@ app.post("/petition", (req, res) => {
 app.get("/thanks", (req, res) => {
     // console.log(req.session);
     if (req.session.signatureId) {
-        // Promise.all([
-        //     db.countSigners(),
-        //     db.getSignature(req.session.signatureId)
-        // ])
-
-        db.getSignature(req.session.signatureId).then(function(results) {
-            // console.log(results);
-            const usersSignature = results[0].sig;
+        Promise.all([
+            db.countSigners(),
+            db.getSignature(req.session.signatureId)
+        ]).then(function(results) {
+            const numOfSigners = results[0][0].count;
+            const userSignature = results[1][0].sig;
+            // console.log("number of signers: ", numOfSigners);
             res.render("thanks", {
                 layout: "main",
                 name: req.session.first,
-                signature: usersSignature
-                // TO DO: get function for counting signatures with Promise.all
+                signature: userSignature,
+                numOfSigners: numOfSigners
             });
         });
     } else {
@@ -210,12 +218,11 @@ app.get("/signers", (req, res) => {
     if (req.session.signatureId) {
         db.getSigners()
             .then(function(results) {
-                // console.log(results);
-                const arrayOfSignersNames = results;
-                // console.log(arrayOfSignersNames);
+                const arrayOfSigners = results;
+                console.log("arrayOfSigners: ", arrayOfSigners);
                 res.render("signers", {
                     layout: "main",
-                    listOfSigners: arrayOfSignersNames
+                    listOfSigners: arrayOfSigners
                 });
             })
             .catch(function(err) {
@@ -229,8 +236,8 @@ app.get("/signers", (req, res) => {
 app.get("/signers/:cities", (req, res) => {
     db.getSignersbyCity(req.params.cities)
         .then(function(results) {
-            // console.log(results);
             const arrayOfSignersPerCity = results;
+            console.log(arrayOfSignersPerCity);
             res.render("signers", {
                 layout: "main",
                 listOfSigners: arrayOfSignersPerCity
