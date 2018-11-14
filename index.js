@@ -36,13 +36,23 @@ app.use(function(req, res, next) {
     next();
 });
 
-/////////////// PUBLIC DIR
-
 app.use(express.static(__dirname + "/public"));
+
+app.use(function(req, res, next) {
+    if (
+        !req.session.userId &&
+        req.url !== "/login" &&
+        req.url !== "/register"
+    ) {
+        res.redirect("/register");
+    } else {
+        next();
+    }
+});
 
 /////////////// ROUTES
 
-app.get("/", function(req, res) {
+app.get("/", (req, res) => {
     res.redirect("/register");
 });
 
@@ -76,16 +86,21 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
-    res.render("profile", {
-        layout: "main"
-    });
+    if (!req.session.userId) {
+        res.redirect("/register");
+    } else {
+        res.render("profile", {
+            layout: "main"
+        });
+    }
 });
 
 app.post("/profile", (req, res) => {
     if (req.body.age != null || req.body.city != null || req.body.url != null) {
         var httpUrl = "";
         if (
-            !req.body.url.startsWith("http") ||
+            req.body.url !== "" &&
+            !req.body.url.startsWith("http") &&
             !req.body.url.startsWith("https")
         ) {
             httpUrl = "http://" + req.body.url;
@@ -220,7 +235,11 @@ app.post("/profile/edit", (req, res) => {
         });
     }
     var httpUrl = "";
-    if (!req.body.url.startsWith("http") && !req.body.url.startsWith("https")) {
+    if (
+        req.body.url !== "" &&
+        !req.body.url.startsWith("http") &&
+        !req.body.url.startsWith("https")
+    ) {
         httpUrl = "http://" + req.body.url;
         console.log("no http");
     } else {
@@ -337,7 +356,7 @@ app.get("/signers/:cities", (req, res) => {
 });
 
 app.post("/sig/delete", (req, res) => {
-    console.log("delete signature");
+    // console.log("delete signature");
     db.deleteSignature(req.session.userId)
         .then(function() {
             req.session.signatureId = null;
@@ -349,9 +368,16 @@ app.post("/sig/delete", (req, res) => {
         });
 });
 
-// app.post("/user/delete", (req, res) => {
-//     console.log("delete user");
-// });
+app.post("/user/delete", (req, res) => {
+    Promise.all([
+        db.deleteSignature(req.session.userId),
+        db.deleteUserProfile(req.session.userId)
+    ])
+        .then(db.deleteUser(req.session.userId), res.redirect("/logout"))
+        .catch(function(err) {
+            console.log("Error in POST delete user ", err);
+        });
+});
 
 app.get("/logout", function(req, res) {
     req.session = null;

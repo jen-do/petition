@@ -8,11 +8,15 @@ body {
     text-align: center;
 }
 
+/*petition and canvas*/
+
 canvas {
     border: 1px dashed #144c52;
     margin: 20px 0;
     display: block;
 }
+
+/*forms*/
 
 label {
     display: block;
@@ -24,6 +28,8 @@ label > input {
     display: block;
     margin: 0 auto;
 }
+
+/*signers*/
 
 p.signers {
     line-height: 0.75em;

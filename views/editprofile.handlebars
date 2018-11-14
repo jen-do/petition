@@ -1,3 +1,5 @@
+{{> nav}}
+
 <h2>Update your profile</h2>
 
 {{#if err}}
@@ -21,5 +23,10 @@
 
 <form method="POST" action="/sig/delete">
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <button>Unsign Petition</button>
+    <button>unsign petition</button>
+</form>
+
+<form method="POST" action="/user/delete">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>delete your account</button>
 </form>

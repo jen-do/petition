@@ -196,3 +196,31 @@ exports.deleteSignature = function(user_id) {
             return;
         });
 };
+
+exports.deleteUserProfile = function(user_id) {
+    return db
+        .query(
+            `
+            DELETE FROM user_profiles
+            WHERE user_id = $1
+            `,
+            [user_id]
+        )
+        .then(function() {
+            return;
+        });
+};
+
+exports.deleteUser = function(id) {
+    return db
+        .query(
+            `
+            DELETE FROM users
+            WHERE id = $1
+            `,
+            [id]
+        )
+        .then(function() {
+            return;
+        });
+};
