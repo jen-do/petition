@@ -6,16 +6,14 @@
 
 body {
     background: #adccc7;
-    font-family: "Merriweather sans";
-    /* position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); */
+    font-family: "Montserrat", sans-serif;
     text-align: center;
-    /* margin-top: 100px; */
     position: relative;
     width: 100%;
-    /* overflow: hidden; */
+    /* background-image: url("/images/aufdemfeld.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover; */
 }
 
 #overlay::before {
@@ -30,34 +28,53 @@ body {
     z-index: 10;
 }
 
-#bigimage {
+#bigimage,
+#loggedinimage {
     width: 100%;
     height: auto;
     object-fit: cover;
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
-#main {
+.main {
     z-index: 10;
     position: absolute;
-    top: 25%;
+    top: 50px;
     left: 50%;
-    transform: translate(-50%, -25%);
+    transform: translateX(-50%);
     text-align: center;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 5px;
-    width: 40%;
-    padding: 20px;
+    min-width: 50%;
+    padding: 40px;
+    margin-bottom: 70px;
+}
+
+#loggedin {
+    top: 100px;
 }
 
 a {
     color: #144c52;
 }
 
+p {
+    line-height: 1.75em;
+}
+
+h2 {
+    line-height: 2.5em;
+}
+
 /*petition and canvas*/
 
 canvas {
     border: 1px dashed #144c52;
-    margin: 20px 0;
+    margin: 20px auto;
     display: block;
 }
 
@@ -70,7 +87,10 @@ nav {
     align-items: center;
     position: absolute;
     top: 0;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    text-transform: uppercase;
+    z-index: 20;
 }
 
 nav a {
@@ -81,13 +101,14 @@ nav a {
 
 label {
     display: block;
-    margin: 10px 0;
-    font-weight: bold;
+    margin: 20px 0;
+    font-weight: 500;
 }
 
 label > input {
     display: block;
     margin: 0 auto;
+    border-radius: 5px;
 }
 
 input {
@@ -95,27 +116,43 @@ input {
     padding: 5px;
     width: 200px;
     margin: 20px;
-    border: 1px solid #144c52;
+    border: 1px solid #5c8d89;
+    background: rgba(255, 255, 255, 0.6);
 }
 
 input:focus {
-    border: 2px solid #144c52;
+    border: 2px solid #5c8d89;
 }
 
 button {
     padding: 10px 20px;
-    border: 1px solid #144c52;
-    background: #fff;
+    border: none;
+    background: #5c8d89;
     border-radius: 5px;
-    margin-top: 10px;
-    font-weight: bold;
+    margin: 10px 0;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+#deletebutton {
+    background: #e29c68;
+}
+
+#error {
+    color: #0c907d;
+    line-height: 2.5em;
+}
+
+/*edit profile*/
+
+#inline {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
 }
 
 /*signers*/
-
-p.signers {
-    line-height: 1.75em;
-}
 
 .city {
     text-transform: capitalize;

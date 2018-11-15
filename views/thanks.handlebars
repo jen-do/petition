@@ -1,6 +1,9 @@
-{{>nav}}
-
 <h2>Thank you, {{name}}, for signing!</h2>
 
 <img src="{{signature}}" alt ="your signature">
 <p><a href="/signers">See all {{numOfSigners}} signers.</a></p>
+
+<form method="POST" action="/sig/delete">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button id="deletebutton">unsign petition</button>
+</form>

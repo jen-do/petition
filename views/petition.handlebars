@@ -1,5 +1,3 @@
-{{>nav}}
-
 <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
 Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel</p>
 {{#if err}}
@@ -8,9 +6,11 @@ Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla conse
 
 
 <form method="POST">
-    <input type="text" name="first" value="{{first}}">
-    <input type="text" name="last" value="{{last}}">
-    <label><input id="hidden" type="hidden" name="sig">please sign here</label>
+    <div id="inline">
+    <label><input type="text" name="first" value="{{first}}">firstname</label>
+    <label><input type="text" name="last" value="{{last}}">lastname</lastname>
+    </div>
+    <label><input id="hidden" type="hidden" name="sig">please sign here:</label>
     <canvas id="canv" width="300" height="100"></canvas>
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>submit</button>

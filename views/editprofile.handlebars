@@ -1,32 +1,33 @@
-{{> nav}}
-
 <h2>Update your profile</h2>
 
 {{#if err}}
-    <p><strong>Uups. Something went wrong. Please try again.</strong></p>
+    <div id="error"><strong>Uups. Something went wrong. Please try again.</strong></div>
 {{/if}}
 
 
 <form method="POST" autocomplete="off">
-    {{#each prepopulateForm}}
-    <label><input type="test" name="first" value="{{first}}">firstname</label>
-    <label><input type="text" name="last" value="{{last}}">lastname</label>
-    <label><input type="test" name="email" value="{{email}}">email</label>
-    <label><input type="text" name="pass">password</label>
-    <label><input type="test" name="age" value="{{age}}">age</label>
-    <label><input type="text" name="city" value="{{city}}">city</label>
-    <label><input type="text" name="url" value={{url}}>homepage</label>
-    {{/each}}
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <button>continue</button>
+    <div id="inline">
+    <div class="splitform">
+        {{#each prepopulateForm}}
+        <label><input type="test" name="first" value="{{first}}">firstname</label>
+        <label><input type="text" name="last" value="{{last}}">lastname</label>
+        <label><input type="email" name="email" value="{{email}}">email</label>
+        <label><input type="password" name="pass">password</label>
+    </div>
+    <div class="splitform">
+        <label><input type="text" name="age" value="{{age}}">age</label>
+        <label><input type="text" name="city" value="{{city}}">city</label>
+        <label><input type="text" name="url" value="{{url}}">homepage</label>
+        {{/each}}
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    </div>
+    </div>
+    <button>update your profile</button>
 </form>
 
-<form method="POST" action="/sig/delete">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <button>unsign petition</button>
-</form>
+<strong>OR</strong>
 
 <form method="POST" action="/user/delete">
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <button>delete your account</button>
+    <button id="deletebutton">delete your account</button>
 </form>

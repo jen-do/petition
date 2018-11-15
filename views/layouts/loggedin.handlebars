@@ -8,13 +8,12 @@
     </head>
     <body>
 
-        <!-- Handlebars.registerPartial("bigimage"); -->
-        {{> bigimage}}
-        <h1>Petition</h1>
-
-        <div class="main">
+        {{> nav}}
+{{> loggedinimage}}
+        <div class="main" id="loggedin">
             {{{body}}}
         </div>
+
         <script src="/script.js"></script>
     </body>
 </html>

@@ -1,13 +1,13 @@
 <h2>Login</h2>
 
 {{#if err}}
-    <p><strong>Uups. Something went wrong. Please try again.</strong></p>
+    <div id="error"><strong>Uups. Something went wrong. Please try again.</strong></div>
 {{/if}}
 
 
 <form method="POST" autocomplete="off">
     <label><input type="email" name="email">email</label>
-    <label><input type="text" name="pass">password</label>
+    <label><input type="password" name="pass">password</label>
 
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>login</button>

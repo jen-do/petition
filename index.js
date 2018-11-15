@@ -91,7 +91,7 @@ app.get("/profile", (req, res) => {
         res.redirect("/register");
     } else {
         res.render("profile", {
-            layout: "main"
+            layout: "loggedin"
         });
     }
 });
@@ -126,7 +126,7 @@ app.post("/profile", (req, res) => {
             .catch(function(err) {
                 console.log(err);
                 res.render("profile", {
-                    layout: "main",
+                    layout: "loggedin",
                     err: err
                 });
             });
@@ -186,14 +186,14 @@ app.get("/profile/edit", (req, res) => {
             const updateProfileArray = results;
             console.log("updateProfileArray:", updateProfileArray);
             res.render("editprofile", {
-                layout: "main",
+                layout: "loggedin",
                 prepopulateForm: updateProfileArray
             });
         })
         .catch(function(err) {
             console.log(err);
             res.render("editprofile", {
-                layout: "main",
+                layout: "loggedin",
                 err: err
             });
         });
@@ -217,7 +217,7 @@ app.post("/profile/edit", (req, res) => {
             .catch(function(err) {
                 console.log("err in UpdateUserandPass: ", err);
                 res.render("editprofile", {
-                    layout: "main",
+                    layout: "loggedin",
                     err: err
                 });
             });
@@ -230,7 +230,7 @@ app.post("/profile/edit", (req, res) => {
         ).catch(function(err) {
             console.log("err in updateUser: ", err);
             res.render("editprofile", {
-                layout: "main",
+                layout: "loggedin",
                 err: err
             });
         });
@@ -261,7 +261,7 @@ app.post("/profile/edit", (req, res) => {
         .catch(function(err) {
             console.log("updateUserProfile err: ", err);
             res.render("editprofile", {
-                layout: "main",
+                layout: "loggedin",
                 err: err
             });
         });
@@ -272,7 +272,7 @@ app.get("/petition", (req, res) => {
         res.redirect("/thanks");
     } else {
         res.render("petition", {
-            layout: "main",
+            layout: "loggedin",
             first: req.session.first,
             last: req.session.last
         });
@@ -290,7 +290,7 @@ app.post("/petition", (req, res) => {
         .catch(function(err) {
             console.log(err);
             res.render("petition", {
-                layout: "main",
+                layout: "loggedin",
                 err: err
             });
         });
@@ -308,7 +308,7 @@ app.get("/thanks", (req, res) => {
                 const userSignature = results[1][0].sig;
                 // console.log("number of signers: ", numOfSigners);
                 res.render("thanks", {
-                    layout: "main",
+                    layout: "loggedin",
                     name: req.session.first,
                     signature: userSignature,
                     numOfSigners: numOfSigners
@@ -329,7 +329,7 @@ app.get("/signers", (req, res) => {
                 const arrayOfSigners = results;
                 console.log("arrayOfSigners: ", arrayOfSigners);
                 res.render("signers", {
-                    layout: "main",
+                    layout: "loggedin",
                     listOfSigners: arrayOfSigners
                 });
             })
@@ -347,7 +347,7 @@ app.get("/signers/:cities", (req, res) => {
             const arrayOfSignersPerCity = results;
             console.log(arrayOfSignersPerCity);
             res.render("signers", {
-                layout: "main",
+                layout: "loggedin",
                 listOfSignersPerCity: arrayOfSignersPerCity
             });
         })
