@@ -18,7 +18,8 @@ const csurf = require("csurf");
 
 app.use(
     cookieSession({
-        secret: "nobody knows this secret but me",
+        secret:
+            process.env.SESSION_SECRET || require("./secrets").sessionSecret,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 6
     })
 );
@@ -347,7 +348,7 @@ app.get("/signers/:cities", (req, res) => {
             console.log(arrayOfSignersPerCity);
             res.render("signers", {
                 layout: "main",
-                listOfSigners: arrayOfSignersPerCity
+                listOfSignersPerCity: arrayOfSignersPerCity
             });
         })
         .catch(function(err) {
@@ -384,4 +385,4 @@ app.get("/logout", function(req, res) {
     res.redirect("/register");
 });
 
-app.listen(8080, () => console.log("listening"));
+app.listen(process.env.PORT || 8080, () => console.log("listening"));

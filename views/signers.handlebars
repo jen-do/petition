@@ -11,5 +11,10 @@
     {{/each}}
 
 
-
-<a href="/logout">log out</a>
+    {{#each listOfSignersPerCity}}
+        {{#if url}}
+            <p class="signers"><a href={{url}}>{{first}} {{last}}</a> {{age}}</p>
+        {{else}}
+            <p class="signers">{{first}} {{last}} {{age}}</p>
+        {{/if}}
+    {{/each}}

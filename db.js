@@ -1,6 +1,8 @@
 const spicedPg = require("spiced-pg");
 
-const db = spicedPg(`postgres:postgres:postgres@localhost:5432/petition`);
+var db =
+    process.env.DATABASE_URL ||
+    spicedPg(`postgres:postgres:postgres@localhost:5432/petition`);
 
 exports.register = function(first, last, email, hash) {
     return db
@@ -53,7 +55,7 @@ exports.updateUser = function(id, first, last, email) {
         UPDATE users
         SET first = $2, last = $3, email = $4
         WHERE id = $1
-    
+
         `,
             [id, first, last, email]
         )
