@@ -1,8 +1,9 @@
 const spicedPg = require("spiced-pg");
 
-var db =
+var db = spicedPg(
     process.env.DATABASE_URL ||
-    spicedPg(`postgres:postgres:postgres@localhost:5432/petition`);
+        `postgres:postgres:postgres@localhost:5432/petition`
+);
 
 exports.register = function(first, last, email, hash) {
     return db
