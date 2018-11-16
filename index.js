@@ -13,15 +13,22 @@ app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
 // handlebars - do not touch this code
 
-const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 const csurf = require("csurf");
 
+var session = require("express-session");
+var Store = require("connect-redis")(session);
+
 app.use(
-    cookieSession({
-        secret:
-            process.env.SESSION_SECRET || require("./secrets").sessionSecret,
-        maxAge: 1000 * 60 * 60 * 24 * 7 * 6
+    session({
+        store: new Store({
+            ttl: 3600,
+            host: "localhost",
+            port: 6379
+        }),
+        resave: false,
+        saveUninitialized: true,
+        secret: "my super fun secret"
     })
 );
 
@@ -51,6 +58,20 @@ app.use(function(req, res, next) {
         next();
     }
 });
+
+//////////////// delete Redis Cache
+////// to do: clean up that file.
+
+function deleteRedisCache() {
+    redis
+        .get("signersList")
+        .then(function() {
+            redis.del("signersList");
+        })
+        .catch(function(err) {
+            console.log("Error in delete redis cache in POST petition: ", err);
+        });
+}
 
 /////////////// ROUTES
 
@@ -101,7 +122,7 @@ app.post("/profile", (req, res) => {
     if (req.body.age != null || req.body.city != null || req.body.url != null) {
         var httpUrl = "";
         if (
-            !req.body.url !== "" &&
+            req.body.url !== "" &&
             !req.body.url.startsWith("http") &&
             !req.body.url.startsWith("https")
         ) {
@@ -222,6 +243,7 @@ app.post("/profile/edit", (req, res) => {
                     hash
                 );
             })
+            .then(deleteRedisCache())
             .catch(function(err) {
                 console.log("err in UpdateUserandPass: ", err);
                 res.render("editprofile", {
@@ -235,17 +257,19 @@ app.post("/profile/edit", (req, res) => {
             req.body.first,
             req.body.last,
             req.body.email
-        ).catch(function(err) {
-            console.log("err in updateUser: ", err);
-            res.render("editprofile", {
-                layout: "loggedin",
-                err: err
+        )
+            .then(deleteRedisCache())
+            .catch(function(err) {
+                console.log("err in updateUser: ", err);
+                res.render("editprofile", {
+                    layout: "loggedin",
+                    err: err
+                });
             });
-        });
     }
     var httpUrl = "";
     if (
-        !req.body.url !== "" &&
+        req.body.url !== "" &&
         !req.body.url.startsWith("http") &&
         !req.body.url.startsWith("https")
     ) {
@@ -255,7 +279,7 @@ app.post("/profile/edit", (req, res) => {
         httpUrl = req.body.url;
         console.log("http");
     }
-
+    console.log(httpUrl);
     db.updateUserProfile(
         req.body.age,
         req.body.city,
@@ -294,7 +318,7 @@ app.post("/petition", (req, res) => {
             req.session.signatureId = results[0].id;
             res.redirect("/thanks");
         })
-
+        .then(deleteRedisCache())
         .catch(function(err) {
             console.log(err);
             res.render("petition", {
@@ -332,18 +356,50 @@ app.get("/thanks", (req, res) => {
 
 app.get("/signers", (req, res) => {
     if (req.session.signatureId) {
-        db.getSigners()
-            .then(function(results) {
-                const arrayOfSigners = results;
-                console.log("arrayOfSigners: ", arrayOfSigners);
-                res.render("signers", {
-                    layout: "loggedin",
-                    listOfSigners: arrayOfSigners
-                });
-            })
-            .catch(function(err) {
-                console.log("Error in GET signers: ", err);
-            });
+        redis.get("signersList").then(data => {
+            // nothing cached in redis
+            if (!data) {
+                console.log("nothing cached in redis");
+                return db
+                    .getSigners()
+                    .then(results => {
+                        var signersRedisData = JSON.stringify(results);
+                        // console.log(signersRedisData);
+                        redis.setex("signersList", 3600, signersRedisData);
+                        const arrayOfSigners = results;
+                        res.render("signers", {
+                            layout: "loggedin",
+                            listOfSigners: arrayOfSigners
+                        });
+                    })
+                    .catch(function(err) {
+                        console.log(
+                            "Error in GET signers / no data cached in redis: ",
+                            err
+                        );
+                    });
+            }
+            // data found in redis cache => render it from there
+            else {
+                console.log("data cached in redis");
+                redis
+                    .get("signersList")
+                    .then(data => {
+                        console.log(data);
+                        const arrayOfSigners = JSON.parse(data);
+                        res.render("signers", {
+                            layout: "loggedin",
+                            listOfSigners: arrayOfSigners
+                        });
+                    })
+                    .catch(function(err) {
+                        console.log(
+                            "Error in GET signers: / redis cache ",
+                            err
+                        );
+                    });
+            }
+        });
     } else {
         res.redirect("/petition");
     }
@@ -369,9 +425,11 @@ app.post("/sig/delete", (req, res) => {
     db.deleteSignature(req.session.userId)
         .then(function() {
             req.session.signatureId = null;
+
             // console.log(results);
             res.redirect("/petition");
         })
+        .then(deleteRedisCache())
         .catch(function(err) {
             console.log("Error in POST delete signature ", err);
         });
@@ -382,15 +440,17 @@ app.post("/user/delete", (req, res) => {
         db.deleteSignature(req.session.userId),
         db.deleteUserProfile(req.session.userId)
     ])
-        .then(db.deleteUser(req.session.userId), res.redirect("/logout"))
+        .then(db.deleteUser(req.session.userId))
+        .then(deleteRedisCache(), res.redirect("/logout"))
         .catch(function(err) {
             console.log("Error in POST delete user ", err);
         });
 });
 
 app.get("/logout", function(req, res) {
-    req.session = null;
-    res.redirect("/register");
+    req.session.destroy(function() {
+        res.redirect("/register");
+    });
 });
 
 app.listen(process.env.PORT || 8080, () => console.log("listening"));
