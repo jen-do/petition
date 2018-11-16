@@ -5,7 +5,7 @@ const app = express();
 
 const db = require("./db");
 const bcrypt = require("./bcrypt");
-// const redis = require("./redis");
+const redis = require("./redis");
 
 // handlebars - do not touch this code
 var hb = require("express-handlebars");
