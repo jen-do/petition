@@ -5,8 +5,7 @@
 }
 
 body {
-    background: #adccc7;
-    font-family: "Montserrat", sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
     text-align: center;
     position: relative;
     width: 100%;
@@ -43,19 +42,32 @@ body {
 .main {
     z-index: 10;
     position: absolute;
-    top: 50px;
+    top: 200px;
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 5px;
-    min-width: 50%;
-    padding: 40px;
+    min-width: 30%;
+    padding: 20px 40px;
     margin-bottom: 70px;
+}
+
+#heading {
+    z-index: 10;
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    top: 30px;
+    color: #fff;
+    font-size: 40px;
 }
 
 #loggedin {
     top: 100px;
+    min-width: 50%;
 }
 
 a {
@@ -63,11 +75,14 @@ a {
 }
 
 p {
-    line-height: 1.75em;
+    padding: 5px 0;
 }
 
+h1,
 h2 {
-    line-height: 2.5em;
+    font-family: "Oswald";
+    font-weight: bold;
+    padding: 10px 0;
 }
 
 /*petition and canvas*/
@@ -90,19 +105,21 @@ nav {
     background: rgba(255, 255, 255, 0.8);
     font-weight: 600;
     text-transform: uppercase;
-    z-index: 20;
+    z-index: 30;
 }
 
 nav a {
     text-decoration: none;
+    font-family: "Oswald";
 }
 
 /*forms*/
 
 label {
     display: block;
-    margin: 20px 0;
-    font-weight: 500;
+    margin: 10px 0;
+    font-weight: 400;
+    font-style: italic;
 }
 
 label > input {
@@ -129,19 +146,26 @@ button {
     border: none;
     background: #5c8d89;
     border-radius: 5px;
-    margin: 10px 0;
+    margin: 10px auto;
     font-weight: 600;
     color: #fff;
     text-transform: uppercase;
+    display: block;
+}
+
+button > a {
+    color: #fff;
+    text-decoration: none;
 }
 
 #deletebutton {
     background: #e29c68;
+    cursor: pointer;
 }
 
 #error {
     color: #0c907d;
-    line-height: 2.5em;
+    padding: 10px;
 }
 
 /*edit profile*/

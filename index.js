@@ -5,6 +5,7 @@ const app = express();
 
 const db = require("./db");
 const bcrypt = require("./bcrypt");
+// const redis = require("./redis");
 
 // handlebars - do not touch this code
 var hb = require("express-handlebars");
@@ -100,7 +101,7 @@ app.post("/profile", (req, res) => {
     if (req.body.age != null || req.body.city != null || req.body.url != null) {
         var httpUrl = "";
         if (
-            req.body.url !== "" &&
+            !req.body.url !== "" &&
             !req.body.url.startsWith("http") &&
             !req.body.url.startsWith("https")
         ) {
@@ -168,6 +169,13 @@ app.post("/login", (req, res) => {
                     } else {
                         throw new Error("no matches");
                     }
+                })
+                .catch(function(err) {
+                    console.log(err);
+                    res.render("login", {
+                        layout: "main",
+                        err: err
+                    });
                 });
         })
         .catch(function(err) {
@@ -237,7 +245,7 @@ app.post("/profile/edit", (req, res) => {
     }
     var httpUrl = "";
     if (
-        req.body.url !== "" &&
+        !req.body.url !== "" &&
         !req.body.url.startsWith("http") &&
         !req.body.url.startsWith("https")
     ) {
