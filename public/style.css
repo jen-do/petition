@@ -9,10 +9,9 @@ body {
     text-align: center;
     position: relative;
     width: 100%;
-    /* background-image: url("/images/aufdemfeld.jpg");
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #overlay::before {
@@ -32,51 +31,30 @@ body {
     width: 100%;
     height: auto;
     object-fit: cover;
-    width: 100%;
-    height: auto;
     position: fixed;
     top: 0;
     left: 0;
 }
 
+/* content containers */
+
 .main {
     z-index: 10;
-    position: absolute;
-    top: 200px;
-    left: 50%;
-    transform: translateX(-50%);
     text-align: center;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 5px;
     min-width: 30%;
     padding: 20px 40px;
+    margin-top: 20px;
     margin-bottom: 70px;
 }
 
-#heading {
-    z-index: 10;
-    position: absolute;
-    top: 200px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    top: 30px;
-    color: #fff;
-    font-size: 40px;
-}
-
 #loggedin {
-    top: 100px;
-    min-width: 50%;
+    margin-top: 40px;
+    width: 50%;
 }
 
-a {
-    color: #144c52;
-}
-
-p {
-    padding: 5px 0;
-}
+/* fonts etc. */
 
 h1,
 h2 {
@@ -85,39 +63,63 @@ h2 {
     padding: 10px 0;
 }
 
-/*petition and canvas*/
+#heading {
+    z-index: 10;
+    text-align: center;
+    margin-top: 30px;
+    color: #fff;
+    font-size: 1.7em;
+    width: 100%;
+}
 
-canvas {
-    border: 1px dashed #144c52;
-    margin: 20px auto;
-    display: block;
+a {
+    color: #144c52;
+    text-decoration: none;
+}
+
+p {
+    padding: 5px 0;
+}
+
+ul {
+    margin-left: 20px;
+}
+
+hr {
+    margin: 15px 0;
 }
 
 /*nav*/
+
 nav {
     width: 100%;
-    height: 60px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    position: absolute;
-    top: 0;
     background: rgba(255, 255, 255, 0.8);
     font-weight: 600;
     text-transform: uppercase;
     z-index: 30;
 }
 
-nav a {
+#nav-items {
+    display: flex;
+    height: 60px;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#nav-items a {
     text-decoration: none;
     font-family: "Oswald";
+}
+
+.topnav .hamburger-icon {
+    display: none;
 }
 
 /*forms*/
 
 label {
     display: block;
-    margin: 10px 0;
+    margin: 5px 0;
     font-weight: 400;
     font-style: italic;
 }
@@ -133,12 +135,12 @@ input {
     padding: 5px;
     width: 200px;
     margin: 20px;
-    border: 1px solid #5c8d89;
+    border: 1px solid #add2c9;
     background: rgba(255, 255, 255, 0.6);
 }
 
 input:focus {
-    border: 2px solid #5c8d89;
+    border: 2px solid #add2c9;
 }
 
 button {
@@ -146,16 +148,17 @@ button {
     border: none;
     background: #5c8d89;
     border-radius: 5px;
-    margin: 10px auto;
+    margin: 15px auto;
     font-weight: 600;
     color: #fff;
     text-transform: uppercase;
     display: block;
+    text-decoration: none;
+    cursor: pointer;
 }
 
-button > a {
+button a {
     color: #fff;
-    text-decoration: none;
 }
 
 #deletebutton {
@@ -168,6 +171,18 @@ button > a {
     padding: 10px;
 }
 
+.left {
+    text-align: left;
+}
+
+/*petition and canvas*/
+
+canvas {
+    border: 1px dashed #144c52;
+    margin: 10px auto;
+    display: block;
+}
+
 /*edit profile*/
 
 #inline {
@@ -176,8 +191,64 @@ button > a {
     flex-wrap: wrap;
 }
 
+#inline > button {
+    margin: 15px 0;
+}
+
 /*signers*/
 
-.city {
+.city,
+#username {
     text-transform: capitalize;
+}
+
+/* media queries */
+
+@media screen and (max-width: 600px) {
+    .topnav {
+        background: #144c52;
+    }
+    #nav-items {
+        display: none;
+    }
+    .topnav a.hamburger-icon {
+        /* float: right; */
+        display: block;
+        padding: 10px 0;
+    }
+    .hamburger-icon img {
+        width: 40px;
+    }
+    .topnav.responsive {
+        position: relative;
+        z-index: 500;
+    }
+    .topnav.responsive #nav-items {
+        display: block;
+        position: absolute;
+        width: 100%;
+    }
+    .topnav.responsive #nav-items a {
+        display: block;
+        padding: 10px 0;
+        font-size: 1.3em;
+        background: #144c52;
+        color: #fff;
+    }
+}
+
+@media screen and (max-width: 740px) {
+    #bigimage,
+    #loggedinimage {
+        height: 100vh;
+    }
+    #loggedin {
+        width: 90%;
+    }
+    #heading {
+        line-height: 2.2em;
+    }
+    .main {
+        padding: 4% 5%;
+    }
 }

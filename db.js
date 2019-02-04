@@ -62,9 +62,6 @@ exports.updateUser = function(id, first, last, email) {
         )
         .then(function(results) {
             return results.rows;
-        })
-        .catch(function(err) {
-            throw console.log(err);
         });
 };
 
@@ -81,9 +78,6 @@ exports.updateUserAndPassword = function(id, first, last, email, hash) {
         )
         .then(function(results) {
             return results.rows;
-        })
-        .catch(function(err) {
-            throw console.log(err);
         });
 };
 
@@ -101,9 +95,6 @@ exports.updateUserProfile = function(age, city, url, user_id) {
         )
         .then(function(results) {
             return results.rows;
-        })
-        .catch(function(err) {
-            throw console.log(err);
         });
 };
 
@@ -152,9 +143,6 @@ exports.getSignature = function(id) {
         )
         .then(function(results) {
             return results.rows;
-        })
-        .catch(function(err) {
-            console.log(err);
         });
 };
 

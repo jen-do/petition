@@ -28,3 +28,14 @@ document.addEventListener("mouseup", function() {
     hiddenField.value = "";
     hiddenField.value += canvas.toDataURL();
 });
+
+function toggleNav() {
+    var nav = document.getElementById("menu");
+    if (nav.className === "topnav") {
+        nav.className += " responsive";
+    } else {
+        nav.className = "topnav";
+    }
+}
+
+toggleNav();

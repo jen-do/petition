@@ -1,9 +1,23 @@
-<h2>Thank you, {{name}}, for signing!</h2>
+<h2>Hey <span id="username">{{name}}</span>! Thank you for signing!</h2>
 
 <img src="{{signature}}" alt ="your signature">
-<button><a href="/signers">See all {{numOfSigners}} signers.</a></button>
 
-<form method="POST" action="/sig/delete">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <button id="deletebutton">unsign petition</button>
-</form>
+<div id="inline">
+    <a href="/signers"><button>See all {{numOfSigners}} signers</button></a>
+    <form method="POST" action="/sig/delete">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <button id="deletebutton">unsign petition</button>
+    </form>
+</div>
+
+<hr/>
+
+<div class="left">
+<h2>It's always good to sign - now here is what you can do:</h2>
+<ul>
+    <li>Find a community supported agriculutre group in your neighbourhood: <a herf="https://ernte-teilen.org/">www.ernte-teilen.org</a></li>
+    <li>Get an overview on some direct trade initiatives around Berlin: <a herf="https://oxiblog.de/solidarischer-handel-eine-einfuehrung/">www.oxiblog.de/solidarischer-handel-eine-einfuehrung/</a></li>
+    <li>Find a foodcoop next door on <a herf="http://foodcoopedia.de.fcoop.org/wiki/Hauptseite">Foodcoopedia</a></li>
+    <li>Visit your local food counsil: <a herf="http://ernaehrungsrat-berlin.de/">Ernährungsrat Berlin</a></li>
+</ul>
+</div>

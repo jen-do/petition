@@ -1,4 +1,4 @@
-///////////////// SERVER SETUP AND MODULES
+///////////////// SERVER SETUP, MODULES AND MIDDLEWARE
 
 const express = require("express");
 const app = express();
@@ -7,12 +7,12 @@ const db = require("./db");
 const bcrypt = require("./bcrypt");
 const redis = require("./redis");
 
-// handlebars - do not touch this code
+// handlebars
 var hb = require("express-handlebars");
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
-// handlebars - do not touch this code
 
+// bodyparser, csurf and redis
 const bodyParser = require("body-parser");
 const csurf = require("csurf");
 
@@ -39,14 +39,15 @@ app.use(
 );
 
 app.use(csurf());
-
 app.use(function(req, res, next) {
     res.locals.csrfToken = req.csrfToken();
     next();
 });
 
+// serving static files from public dir
 app.use(express.static(__dirname + "/public"));
 
+// redirecting depending on session cookies
 app.use(function(req, res, next) {
     if (
         !req.session.userId &&
@@ -59,8 +60,31 @@ app.use(function(req, res, next) {
     }
 });
 
-//////////////// delete Redis Cache
-////// to do: clean up that file.
+function redirectLoggedInUsers(req, res, next) {
+    if (req.session.userId) {
+        res.redirect("/petition");
+    } else {
+        next();
+    }
+}
+
+function redirectSigners(req, res, next) {
+    if (req.session.signatureId) {
+        res.redirect("/thanks");
+    } else {
+        next();
+    }
+}
+
+function redirectNonSigners(req, res, next) {
+    if (!req.session.signatureId) {
+        res.redirect("/petition");
+    } else {
+        next();
+    }
+}
+
+// delete redis cache
 
 function deleteRedisCache() {
     redis
@@ -79,14 +103,12 @@ app.get("/", (req, res) => {
     res.redirect("/register");
 });
 
-app.get("/register", (req, res) => {
-    if (req.session.userId) {
-        res.redirect("/petition");
-    } else {
-        res.render("register", {
-            layout: "main"
-        });
-    }
+// --- register & login
+
+app.get("/register", redirectLoggedInUsers, (req, res) => {
+    res.render("register", {
+        layout: "main"
+    });
 });
 
 app.post("/register", (req, res) => {
@@ -108,65 +130,16 @@ app.post("/register", (req, res) => {
     });
 });
 
-app.get("/profile", (req, res) => {
-    if (!req.session.userId) {
-        res.redirect("/register");
-    } else {
-        res.render("profile", {
-            layout: "loggedin"
-        });
-    }
+app.get("/login", redirectLoggedInUsers, (req, res) => {
+    res.render("login", {
+        layout: "main"
+    });
 });
 
-app.post("/profile", (req, res) => {
-    if (req.body.age != null || req.body.city != null || req.body.url != null) {
-        var httpUrl = "";
-        if (
-            req.body.url !== "" &&
-            !req.body.url.startsWith("http") &&
-            !req.body.url.startsWith("https")
-        ) {
-            httpUrl = "http://" + req.body.url;
-            console.log("no http");
-        } else {
-            httpUrl = req.body.url;
-            console.log("http");
-        }
-        db.addInfo(
-            req.body.age,
-            req.body.city,
-            httpUrl,
-            // req.body.url,
-            req.session.userId
-        )
-            .then(function(results) {
-                req.session.age = results[0].age;
-                req.session.city = results[0].city;
-                req.session.url = httpUrl;
-                res.redirect("/petition");
-            })
-            .catch(function(err) {
-                console.log(err);
-                res.render("profile", {
-                    layout: "loggedin",
-                    err: err
-                });
-            });
-    } else {
-        res.redirect("/petition");
-    }
-});
-
-app.get("/login", (req, res) => {
-    if (req.session.userId) {
-        res.redirect("/petition");
-    } else {
-        res.render("login", {
-            layout: "main"
-        });
-    }
-});
-
+// 1) checking if email is already registered in the database (if not: an error message is rendered)
+// 2) checking if the password is correct by comparing the user input with the password stored in the database
+// -- if yes (passwords do match): set session cookies and redirect the user based on whether he*she has signed the petition
+// -- if no (passwords do not match): render error message
 app.post("/login", (req, res) => {
     db.login(req.body.email)
         .then(function(results) {
@@ -208,12 +181,47 @@ app.post("/login", (req, res) => {
         });
 });
 
+// --- additional profile information
+
+app.get("/profile", (req, res) => {
+    res.render("profile", {
+        layout: "loggedin"
+    });
+});
+
+app.post("/profile", (req, res) => {
+    let { age, city, url } = req.body;
+
+    if (age != null || city != null || url != null) {
+        var httpUrl = "";
+        if (url !== "" && !url.startsWith("http") && !url.startsWith("https")) {
+            httpUrl = "http://" + url;
+        } else {
+            httpUrl = url;
+        }
+        db.addInfo(age, city, httpUrl, req.session.userId)
+            .then(function(results) {
+                req.session.age = results[0].age;
+                req.session.city = results[0].city;
+                req.session.url = httpUrl;
+                res.redirect("/petition");
+            })
+            .catch(function(err) {
+                console.log(err);
+                res.render("profile", {
+                    layout: "loggedin",
+                    err: err
+                });
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
 app.get("/profile/edit", (req, res) => {
-    console.log("session usedId: ", req.session.userId);
     db.getProfile(req.session.userId)
         .then(function(results) {
             const updateProfileArray = results;
-            console.log("updateProfileArray:", updateProfileArray);
             res.render("editprofile", {
                 layout: "loggedin",
                 prepopulateForm: updateProfileArray
@@ -229,86 +237,67 @@ app.get("/profile/edit", (req, res) => {
 });
 //
 app.post("/profile/edit", (req, res) => {
-    console.log("req.body: ", req.body);
-    if (req.body.pass != "") {
-        // console.log("post on /profile/edit");
+    let { first, last, email, pass, age, city, url } = req.body;
+
+    var httpUrl = "";
+    if (url !== "" && !url.startsWith("http") && !url.startsWith("https")) {
+        httpUrl = "http://" + url;
+    } else {
+        httpUrl = url;
+    }
+
+    if (pass != "") {
         bcrypt
-            .hash(req.body.pass)
+            .hash(pass)
             .then(hash => {
-                db.updateUserAndPassword(
-                    req.session.userId,
-                    req.body.first,
-                    req.body.last,
-                    req.body.email,
-                    hash
-                );
+                Promise.all([
+                    db.updateUserAndPassword(
+                        req.session.userId,
+                        first,
+                        last,
+                        email,
+                        hash
+                    ),
+                    db.updateUserProfile(age, city, httpUrl, req.session.userId)
+                ]);
             })
             .then(deleteRedisCache())
+            .then(res.redirect("/petition"))
             .catch(function(err) {
-                console.log("err in UpdateUserandPass: ", err);
+                console.log("err in updating user profile and password: ", err);
                 res.render("editprofile", {
                     layout: "loggedin",
                     err: err
                 });
             });
     } else {
-        db.updateUser(
-            req.session.userId,
-            req.body.first,
-            req.body.last,
-            req.body.email
-        )
+        Promise.all([
+            db.updateUser(req.session.userId, first, last, email),
+            db.updateUserProfile(age, city, httpUrl, req.session.userId)
+        ])
             .then(deleteRedisCache())
+            .then(res.redirect("/petition"))
             .catch(function(err) {
-                console.log("err in updateUser: ", err);
+                console.log(
+                    "err in updating user profile without password: ",
+                    err
+                );
                 res.render("editprofile", {
                     layout: "loggedin",
                     err: err
                 });
             });
     }
-    var httpUrl = "";
-    if (
-        req.body.url !== "" &&
-        !req.body.url.startsWith("http") &&
-        !req.body.url.startsWith("https")
-    ) {
-        httpUrl = "http://" + req.body.url;
-        console.log("no http");
-    } else {
-        httpUrl = req.body.url;
-        console.log("http");
-    }
-    console.log(httpUrl);
-    db.updateUserProfile(
-        req.body.age,
-        req.body.city,
-        httpUrl,
-        // req.body.url,
-        req.session.userId
-    )
-        .then(function() {
-            res.redirect("/petition");
-        })
-        .catch(function(err) {
-            console.log("updateUserProfile err: ", err);
-            res.render("editprofile", {
-                layout: "loggedin",
-                err: err
-            });
-        });
 });
 
-app.get("/petition", (req, res) => {
-    if (req.session.signatureId) {
-        res.redirect("/thanks");
-    } else {
-        res.render("petition", {
-            layout: "loggedin",
-            first: req.session.first,
-            last: req.session.last
-        });
-    }
+// --- signing the petition & 'thank you'-page
+
+app.get("/petition", redirectSigners, (req, res) => {
+    res.render("petition", {
+        layout: "loggedin",
+        first: req.session.first,
+        last: req.session.last
+    });
 });
 
 app.post("/petition", (req, res) => {
@@ -328,88 +317,71 @@ app.post("/petition", (req, res) => {
         });
 });
 
-app.get("/thanks", (req, res) => {
-    // console.log(req.session);
-    if (req.session.signatureId) {
-        Promise.all([
-            db.countSigners(),
-            db.getSignature(req.session.signatureId)
-        ])
-            .then(function(results) {
-                const numOfSigners = results[0][0].count;
-                const userSignature = results[1][0].sig;
-                // console.log("number of signers: ", numOfSigners);
-                res.render("thanks", {
-                    layout: "loggedin",
-                    name: req.session.first,
-                    signature: userSignature,
-                    numOfSigners: numOfSigners
-                });
-            })
-            .catch(function(err) {
-                console.log("Error in GET thanks: ", err);
+app.get("/thanks", redirectNonSigners, (req, res) => {
+    Promise.all([db.countSigners(), db.getSignature(req.session.signatureId)])
+        .then(function(results) {
+            const numOfSigners = results[0][0].count;
+            const userSignature = results[1][0].sig;
+            res.render("thanks", {
+                layout: "loggedin",
+                name: req.session.first,
+                signature: userSignature,
+                numOfSigners: numOfSigners
             });
-    } else {
-        res.redirect("/petition");
-    }
-});
-
-app.get("/signers", (req, res) => {
-    if (req.session.signatureId) {
-        redis.get("signersList").then(data => {
-            // nothing cached in redis
-            if (!data) {
-                console.log("nothing cached in redis");
-                return db
-                    .getSigners()
-                    .then(results => {
-                        var signersRedisData = JSON.stringify(results);
-                        // console.log(signersRedisData);
-                        redis.setex("signersList", 3600, signersRedisData);
-                        const arrayOfSigners = results;
-                        res.render("signers", {
-                            layout: "loggedin",
-                            listOfSigners: arrayOfSigners
-                        });
-                    })
-                    .catch(function(err) {
-                        console.log(
-                            "Error in GET signers / no data cached in redis: ",
-                            err
-                        );
-                    });
-            }
-            // data found in redis cache => render it from there
-            else {
-                console.log("data cached in redis");
-                redis
-                    .get("signersList")
-                    .then(data => {
-                        console.log(data);
-                        const arrayOfSigners = JSON.parse(data);
-                        res.render("signers", {
-                            layout: "loggedin",
-                            listOfSigners: arrayOfSigners
-                        });
-                    })
-                    .catch(function(err) {
-                        console.log(
-                            "Error in GET signers: / redis cache ",
-                            err
-                        );
-                    });
-            }
+        })
+        .catch(function(err) {
+            console.log("Error in GET thanks: ", err);
         });
-    } else {
-        res.redirect("/petition");
-    }
 });
 
-app.get("/signers/:cities", (req, res) => {
+// --- list of signers
+
+app.get("/signers", redirectNonSigners, (req, res) => {
+    redis.get("signersList").then(data => {
+        // if nothing is cached in redis
+        if (!data) {
+            console.log("nothing cached in redis");
+            return db
+                .getSigners()
+                .then(results => {
+                    var signersRedisData = JSON.stringify(results);
+                    redis.setex("signersList", 3600, signersRedisData);
+                    const arrayOfSigners = results;
+                    res.render("signers", {
+                        layout: "loggedin",
+                        listOfSigners: arrayOfSigners
+                    });
+                })
+                .catch(function(err) {
+                    console.log(
+                        "Error in GET signers / no data cached in redis: ",
+                        err
+                    );
+                });
+        }
+        // if data is stored in redis cache => render it from there
+        else {
+            redis
+                .get("signersList")
+                .then(data => {
+                    console.log("data cached in redis:", data);
+                    const arrayOfSigners = JSON.parse(data);
+                    res.render("signers", {
+                        layout: "loggedin",
+                        listOfSigners: arrayOfSigners
+                    });
+                })
+                .catch(function(err) {
+                    console.log("Error in GET signers: / redis cache ", err);
+                });
+        }
+    });
+});
+
+app.get("/signers/:cities", redirectNonSigners, (req, res) => {
     db.getSignersbyCity(req.params.cities)
         .then(function(results) {
             const arrayOfSignersPerCity = results;
-            console.log(arrayOfSignersPerCity);
             res.render("signers", {
                 layout: "loggedin",
                 listOfSignersPerCity: arrayOfSignersPerCity
@@ -420,13 +392,12 @@ app.get("/signers/:cities", (req, res) => {
         });
 });
 
+// --- delete signature / delete account & logout
+
 app.post("/sig/delete", (req, res) => {
-    // console.log("delete signature");
     db.deleteSignature(req.session.userId)
         .then(function() {
             req.session.signatureId = null;
-
-            // console.log(results);
             res.redirect("/petition");
         })
         .then(deleteRedisCache())
