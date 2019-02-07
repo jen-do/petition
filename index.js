@@ -340,7 +340,7 @@ app.get("/signers", redirectNonSigners, (req, res) => {
     redis.get("signersList").then(data => {
         // if nothing is cached in redis
         if (!data) {
-            console.log("nothing cached in redis");
+            // console.log("nothing cached in redis");
             return db
                 .getSigners()
                 .then(results => {
@@ -364,7 +364,7 @@ app.get("/signers", redirectNonSigners, (req, res) => {
             redis
                 .get("signersList")
                 .then(data => {
-                    console.log("data cached in redis:", data);
+                    // console.log("data cached in redis:", data);
                     const arrayOfSigners = JSON.parse(data);
                     res.render("signers", {
                         layout: "loggedin",

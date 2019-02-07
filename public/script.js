@@ -37,5 +37,4 @@ function toggleNav() {
         nav.className = "topnav";
     }
 }
-
 toggleNav();

@@ -9,7 +9,7 @@ const compare = promisify(bcrypt.compare);
 
 exports.hash = function(password) {
     return genSalt().then(salt => {
-        console.log(salt);
+        // console.log(salt);
         return hash(password, salt);
     });
 };

@@ -82,7 +82,6 @@ exports.updateUserAndPassword = function(id, first, last, email, hash) {
 };
 
 exports.updateUserProfile = function(age, city, url, user_id) {
-    console.log("db.updateuserprofile");
     return db
         .query(
             `

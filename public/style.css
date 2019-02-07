@@ -212,7 +212,6 @@ canvas {
         display: none;
     }
     .topnav a.hamburger-icon {
-        /* float: right; */
         display: block;
         padding: 10px 0;
     }
