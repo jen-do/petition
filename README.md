@@ -19,18 +19,18 @@ This project was built during the course "Full Stack Web Development" at SPICED 
 
 Registration, adding additional information. In the registration process the password is encrypted (hashed) using `bcryt` and the hashed password is stored in the database.
 
-![registration](https://github.com/jen-do/raw/master/public/images/Petition_registration.png)
+![registration](https://github.com/jen-do/petition/raw/master/public/images/Petition_registration.png)
 
 Signing the petition. For drawing the signature a `canvas` element is used.
 
-![signing](https://github.com/jen-do/raw/master/public/images/Petition_signature.png)
+![signing](https://github.com/jen-do/petition/raw/master/public/images/Petition_signature.png)
 
 After signing you are guided to a page that's displaying a 'thank you' message and your signature. You can either unsign the petition or view a list of people who also signed. You can then also choose to only list all signers from a certain city.
 
 I made this website responsive with a navigation switching to a hamburger-style-menu on smaller devices.
 Here is how it looks like on desktop and mobile.
 
-![signing](https://github.com/jen-do/raw/master/public/images/Petition_thank-you-page_desptop-mobile.jpg)
+![signing](https://github.com/jen-do/petition/raw/master/public/images/Petition_thank-you-page_desptop-mobile.jpg)
 
 You can also update your profile information.
 If you choose to delete your account, all information stored about you in the database is deleted, and you're automatically logged out.
